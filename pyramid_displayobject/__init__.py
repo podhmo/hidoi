@@ -1,4 +1,17 @@
 # -*- coding:utf-8 -*-
-import logging
-logger = logging.getLogger(__name__)
+from .displayobject import (
+    DisplayObjectFactory,
+    FieldFactory,
+    WidgetManagement
+)
+from .schema import (
+    SingleModelSchemaFactory,
+    AlsoChildrenSchemaFactory,
+    OneModelOnlySchemaFactory,
+    schema_iterator
+)
 
+
+def includeme(config):
+    config.include(".dynamicinterface")
+    config.include(".displayobject")

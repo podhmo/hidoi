@@ -15,7 +15,8 @@ except IOError:
 
 install_requires=[
     'setuptools',
-    'pyramid'
+    'pyramid',
+    "alchemyjsonschema"
     ]
 
 docs_extras = [
