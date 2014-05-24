@@ -44,6 +44,10 @@ class DisplayObject(object):
     def __repr__(self):
         return "<Disp:%s at 0x%x>" % (self.ob.__class__.__name__, id(self))
 
+    def __iter__(self):
+        for name in self._fieldnames:
+            yield getattr(self, name)
+
 default_widgets = ["text", "date-time"]  # xxx
 
 
