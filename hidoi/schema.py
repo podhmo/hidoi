@@ -57,7 +57,7 @@ class CachedSchemaFactory(object):
         try:
             return self.cache[k]
         except KeyError:
-            v = self.cache[k] = self.schema_factory(src)
+            v = self.cache[k] = self.schema_factory(src, includes=includes, excludes=excludes, overrides=overrides, depth=depth)
             return v
 
 SingleModelSchemaFactory = CachedSchemaFactory(SchemaFactory(SingleModelWalker))

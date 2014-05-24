@@ -14,6 +14,9 @@ class OnceOnlyCallSchema(object):
         self.schema = schema
 
     def __call__(self, *args, **kwargs):
+        assert "includes" in kwargs
+        assert "overrides" in kwargs
+        assert "depth" in kwargs
         if self.life <= 0:
             raise Exception
         self.life -= 1
