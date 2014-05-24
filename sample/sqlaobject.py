@@ -24,28 +24,26 @@ class Bag(Base):
 
 
 from pyramid_displayobject import (
-    AlsoChildrenSchemaFactory,
+    get_display,
     DisplayObjectFactory,
     FieldFactory,
     WidgetManagement,
-)
-from pyramid_displayobject.displayobject import (
-    schema_iterator
 )
 from pyramid.testing import setUp as make_configurator
 
 config = make_configurator()
 config.include("pyramid_displayobject")
-config.add_schema(Item, AlsoChildrenSchemaFactory(Item))
-config.add_schema(Bag, AlsoChildrenSchemaFactory(Bag))
+
+config.add_display(Item)
+config.add_display(Bag)
 
 
 item0 = Item(name="portion", value="heal damage")
 bag0 = Bag(name="1stBag")
 bag0.items.append(item0)
 
-factory = DisplayObjectFactory(schema_iterator, FieldFactory(WidgetManagement()))
-ditem = factory(config, item0)
+ditem = get_display(config, item0)
+
 
 print(ditem)
 print(ditem.id)
@@ -54,7 +52,7 @@ print(ditem.value)
 print(ditem.created_at)
 
 
-dbag = factory(config, bag0)
+dbag = get_display(config, bag0)
 print(dbag._fieldnames)
-print([factory(config, i) for i in dbag.items.value])
+print([get_display(config, i) for i in dbag.items.value])
 

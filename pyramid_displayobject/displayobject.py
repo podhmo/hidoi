@@ -115,7 +115,7 @@ def get_display(request, ob, name=""):
 def add_display(
         config,
         model,
-        modifier,
+        modifier=None,
         name="",
         includes=None,
         excludes=None,
@@ -124,24 +124,31 @@ def add_display(
         field_factory=FieldFactory(WidgetManagement()),
         schema_iterator=schema_iterator,
         schema_factory=AlsoChildrenSchemaFactory):
+
     model = config.maybe_dotted(model)
     modifier = config.maybe_dotted(modifier)
     schema = schema_factory(model, includes=includes, excludes=excludes, overrides=overrides, depth=depth)
     config.add_schema(model, schema, name=name)
+    isrc = config.dynamic_interface(model)
 
-    def create_display_object(request, ob):
-        schema = get_schema(request, ob, name=name)
-        template = schema.copy()
+    if modifier is None:
+        def get_display_object__no_modified(request, ob):
+            factory = request.registry.getUtility(IDisplayObjectFactory)
+            return factory(request, ob, name=name)
+        config.registry.adapters.register([isrc], IDisplayObject, name, get_display_object__no_modified)
+    else:
+        def create_display_object(request, ob):
+            schema = get_schema(request, ob, name=name)
+            template = schema.copy()
 
-        modified = modifier(request, template)
-        if modifier is None:
-            logger.warn("modifier return None: schema=%s", schema)
-            modified = template
+            modified = modifier(request, template)
+            if modifier is None:
+                logger.warn("modifier return None: schema=%s", schema)
+                modified = template
 
-        factory_factory = request.getUtility(IDisplayObjectFactory)
-        return factory_factory(request, ob, schema=modified, name=name)
-    isrc = config.dynamicinterface(model)
-    config.registry.adapters.register([isrc], IDisplayObject, name, create_display_object)
+            factory = request.registry.getUtility(IDisplayObjectFactory)
+            return factory(request, ob, schema=modified, name=name)
+        config.registry.adapters.register([isrc], IDisplayObject, name, create_display_object)
 
 
 def includeme(config):

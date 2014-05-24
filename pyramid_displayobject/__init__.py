@@ -2,15 +2,18 @@
 from .displayobject import (
     DisplayObjectFactory,
     FieldFactory,
-    WidgetManagement
+    WidgetManagement,
+    get_display
 )
 from .schema import (
     SingleModelSchemaFactory,
     AlsoChildrenSchemaFactory,
     OneModelOnlySchemaFactory,
+    get_schema
 )
 
 
 def includeme(config):
     config.include(".dynamicinterface")
+    config.include(".schema")
     config.include(".displayobject")
