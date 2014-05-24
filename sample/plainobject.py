@@ -5,14 +5,14 @@ class Item(object):
         self.value = value
         self.created_at = created_at
 
-from pyramid_displayobject.displayobject import required_of
+from hidoi.displayobject import required_of
 
 
 def item_iterator(request, item, schema):
     yield required_of(item, "name")
     yield required_of(item, "value")
 
-from pyramid_displayobject import (
+from hidoi import (
     DisplayObjectFactory,
     FieldFactory,
     WidgetManagement,

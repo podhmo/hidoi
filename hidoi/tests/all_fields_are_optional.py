@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
-from pyramid_displayobject import display_config
-from pyramid_displayobject.schema import edit
+from hidoi import display_config
+from hidoi.schema import edit
 from .models import Item
 
 

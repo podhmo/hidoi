@@ -23,7 +23,7 @@ class Bag(Base):
     name = sa.Column(sa.String(255), default="", nullable=False)
 
 
-from pyramid_displayobject import (
+from hidoi import (
     get_display,
     DisplayObjectFactory,
     FieldFactory,
@@ -32,7 +32,7 @@ from pyramid_displayobject import (
 from pyramid.testing import setUp as make_configurator
 
 config = make_configurator()
-config.include("pyramid_displayobject")
+config.include("hidoi")
 
 config.add_display(Item)
 config.add_display(Bag)

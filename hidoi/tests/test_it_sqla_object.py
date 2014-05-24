@@ -1,19 +1,19 @@
 # -*- coding:utf-8 -*-
 def _callFUT(*args, **kwargs):
-    from pyramid_displayobject import get_display
+    from hidoi import get_display
     return get_display(*args, **kwargs)
 
 
 def test_it():
     from pyramid.testing import testConfig
-    from pyramid_displayobject.displayobject import DisplayObject
-    from pyramid_displayobject.tests.models import (
+    from hidoi.displayobject import DisplayObject
+    from hidoi.tests.models import (
         Item,
         Bag
     )
     with testConfig() as config:
         # configuration phase
-        config.include("pyramid_displayobject")
+        config.include("hidoi")
 
         config.add_display(Item)
         config.add_display(Bag)

@@ -39,8 +39,8 @@ class PyTest(TestCommand):
         import pytest
         pytest.main(self.test_args)
 
-
-setup(name='pyramid_displayobject',
+## hidoi is display object infrastructure
+setup(name='hidoi',
       version='0.0',
       description='presentation object for pyramid',
       long_description=README + '\n\n' +  CHANGES,

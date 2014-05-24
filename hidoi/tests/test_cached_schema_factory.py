@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 def _getTarget():
-    from pyramid_displayobject.schema import CachedSchemaFactory
+    from hidoi.schema import CachedSchemaFactory
     return CachedSchemaFactory
 
 

@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 def _getTarget():
-    from pyramid_displayobject import DisplayObjectFactory
+    from hidoi import DisplayObjectFactory
     return DisplayObjectFactory
 
 
 def _makeOne(iterator_factory):
-    from pyramid_displayobject import (
+    from hidoi import (
         FieldFactory,
         WidgetManagement,
     )
@@ -20,15 +20,15 @@ class Item(object):
 
 
 def item_iterator(request, item, schema):
-    from pyramid_displayobject.displayobject import required_of
-    from pyramid_displayobject.displayobject import optional_of
+    from hidoi.displayobject import required_of
+    from hidoi.displayobject import optional_of
     yield required_of(item, "name")
     yield required_of(item, "value")
     yield optional_of(item, "created_at")
 
 
 def test_it():
-    from pyramid_displayobject.displayobject import (
+    from hidoi.displayobject import (
         DisplayObject,
         Field
     )
