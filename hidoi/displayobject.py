@@ -9,10 +9,13 @@ from .schema import (
 from zope.interface import implementer
 from .interfaces import (
     IDisplayObjectFactory,
-    IDisplayObject
+    IDisplayObject,
+    IField,
+    IWidgetManagement
 )
 from .dynamicinterface import make_interface_from_class
 from .langhelpers import model_of
+from .widget import WidgetManagement
 
 
 class UnSuppport(Exception):
@@ -30,6 +33,7 @@ class DisplayObjectFactory(object):
         return DisplayObject(iterator, self.field_factory, ob)
 
 
+@implementer(IDisplayObject)
 class DisplayObject(object):
     def __init__(self, iterator, field_factory, ob):
         self.iterator = iterator
@@ -59,19 +63,6 @@ class DisplayObject(object):
         for name in self._fieldnames:
             yield getattr(self, name)
 
-default_widgets = ["text", "date-time"]  # xxx
-
-
-class WidgetManagement(object):
-    def __init__(self, defaults=default_widgets):
-        self.formats = set(default_widgets[:])
-
-    def is_correct(self, widget):
-        return widget in self.formats
-
-    def add(self, widget):
-        self.formats.add(widget)
-
 
 class FieldFactory(object):
     def __init__(self, widget_management, reserved=["name", "widget"], FieldClass=None):
@@ -85,6 +76,7 @@ class FieldFactory(object):
         return self.FieldClass(name, ob, val, widget, required=required, **kwargs)
 
 
+@implementer(IField)
 class Field(object):
     def __init__(self, name, ob, value, widget, required=True, **kwargs):
         attrs = self.__dict__
@@ -192,6 +184,10 @@ def display_config(
 
 def includeme(config):
     config.include(".schema")
+    config.include(".widget")
     config.add_directive("add_display", add_display)
-    default_factory = DisplayObjectFactory(schema_iterator, FieldFactory(WidgetManagement()))
+
+    # it's is not good, but...
+    widget_management = config.registry.getUtility(IWidgetManagement)
+    default_factory = DisplayObjectFactory(schema_iterator, FieldFactory(widget_management))
     config.registry.registerUtility(default_factory, IDisplayObjectFactory)
