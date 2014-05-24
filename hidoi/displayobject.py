@@ -26,7 +26,7 @@ class DisplayObjectFactory(object):
         self.field_factory = field_factory
 
     def __call__(self, request, ob, name="", schema=None):
-        iterator = self.iterator_factory(request, ob, schema)
+        iterator = self.iterator_factory(request, ob, schema, name=name)
         return DisplayObject(iterator, self.field_factory, ob)
 
 
@@ -100,8 +100,9 @@ def optional_of(ob, name, format="text"):
     return name, getattr(ob, name), format, False, {}
 
 
-def schema_iterator(request, ob, schema):
-    schema = schema or get_schema(request, ob)
+def schema_iterator(request, ob, schema, name=""):
+    schema = schema or get_schema(request, ob, name=name)
+    assert schema
     required = schema["required"]
     for name, sub in schema["properties"].items():
         yield name, getattr(ob, name), sub.get("widget", "text"), (name in required), {"label": sub.get("description", name)}
@@ -134,7 +135,6 @@ def add_display(
     schema = schema_factory(model, includes=includes, excludes=excludes, overrides=overrides, depth=depth)
     config.add_schema(model, schema, name=name)
     isrc = config.dynamic_interface(model)
-
     if modifier is None:
         def get_display_object__no_modified(request, ob):
             factory = request.registry.getUtility(IDisplayObjectFactory)

@@ -19,7 +19,7 @@ class Item(object):
         self.created_at = created_at
 
 
-def item_iterator(request, item, schema):
+def item_iterator(request, item, schema, name=""):
     from hidoi.displayobject import required_of
     from hidoi.displayobject import optional_of
     yield required_of(item, "name")
