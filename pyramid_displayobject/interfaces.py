@@ -8,6 +8,11 @@ class ISchema(IDict):
     """
 
 
+class IDisplayObject(IDict):
+    """ display objecs has some attributes. a attrubute is almost Field class object.
+    """
+
+
 class ISchemaFactory(Interface):
     def __call__(src, includes=None, excludes=None, overrides=None, depth=None):
         pass

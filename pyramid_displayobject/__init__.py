@@ -8,7 +8,6 @@ from .schema import (
     SingleModelSchemaFactory,
     AlsoChildrenSchemaFactory,
     OneModelOnlySchemaFactory,
-    schema_iterator
 )
 
 

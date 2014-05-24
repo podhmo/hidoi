@@ -1,13 +1,16 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-
 from .schema import (
     AlsoChildrenSchemaFactory,
     get_schema
 )
 from zope.interface import implementer
-from .interfaces import IDisplayObjectFactory
+from .interfaces import (
+    IDisplayObjectFactory,
+    IDisplayObject
+)
+from .dynamicinterface import make_interface_from_class
 
 
 class UnSuppport(Exception):
@@ -20,9 +23,10 @@ class DisplayObjectFactory(object):
         self.iterator_factory = iterator_factory
         self.field_factory = field_factory
 
-    def __call__(self, request, ob, schema, name=""):
+    def __call__(self, request, ob, name="", schema=None):
+        schema = schema or get_schema(request, ob)
         iterator = self.iterator_factory(request, ob, schema)
-        return DisplayObject(iterator, self.field_factory, ob, name=name)
+        return DisplayObject(iterator, self.field_factory, ob)
 
 
 class DisplayObject(object):
@@ -101,6 +105,13 @@ def schema_iterator(request, ob, schema):
         yield name, getattr(ob, name), sub.get("widget", "text"), (name in required), {"label": sub.get("description", name)}
 
 
+def get_display(request, ob, name=""):
+    adapters = request.registry.adapters
+    isrc = make_interface_from_class(ob.__class__)
+    factory = adapters.lookup([isrc], IDisplayObject, name)
+    return factory(request, ob)
+
+
 def add_display(
         config,
         model,
@@ -119,7 +130,7 @@ def add_display(
     config.add_schema(model, schema, name=name)
 
     def create_display_object(request, ob):
-        schema = get_schema(request, ob)
+        schema = get_schema(request, ob, name=name)
         template = schema.copy()
 
         modified = modifier(request, template)
@@ -128,10 +139,13 @@ def add_display(
             modified = template
 
         factory_factory = request.getUtility(IDisplayObjectFactory)
-        return factory_factory(request, ob, modified)
+        return factory_factory(request, ob, schema=modified, name=name)
+    isrc = config.dynamicinterface(model)
+    config.registry.adapters.register([isrc], IDisplayObject, name, create_display_object)
 
 
 def includeme(config):
     config.include(".schema")
+    config.add_directive("add_display", add_display)
     default_factory = DisplayObjectFactory(schema_iterator, FieldFactory(WidgetManagement()))
-    config.registerUtility(default_factory, IDisplayObjectFactory)
+    config.registry.registerUtility(default_factory, IDisplayObjectFactory)
