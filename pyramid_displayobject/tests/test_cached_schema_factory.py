@@ -40,11 +40,12 @@ def test_prepare():
 
 def test_it__cache():
     expected = object()
+    model = object()
     target = _makeOne(OnceOnlyCallSchema(expected))
 
-    result = target(object(), includes=["id", "name"], overrides={"id": "1"}, depth=1)
-    result = target(object(), includes=["id", "name"], overrides={"id": "1"}, depth=1)
-    result = target(object(), includes=["id", "name"], overrides={"id": "1"}, depth=1)
-    result = target(object(), includes=["id", "name"], overrides={"id": "1"}, depth=1)
-    result = target(object(), includes=["id", "name"], overrides={"id": "1"}, depth=1)
+    result = target(model, includes=["id", "name"], overrides={"id": "1"}, depth=1)
+    result = target(model, includes=["id", "name"], overrides={"id": "1"}, depth=1)
+    result = target(model, includes=["id", "name"], overrides={"id": "1"}, depth=1)
+    result = target(model, includes=["id", "name"], overrides={"id": "1"}, depth=1)
+    result = target(model, includes=["id", "name"], overrides={"id": "1"}, depth=1)
     assert result == expected

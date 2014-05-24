@@ -5,19 +5,7 @@ class Item(object):
         self.value = value
         self.created_at = created_at
 
-    schema = {"type": "object",
-              "properties": {"name": {"type": "string", "widget": "text"},
-                             "value": {"type": "string", "widget": "text", "description": "effect of item"},
-                             "created_at": {"type": "date-time", "widget": "date-time"}},
-              "required": ["name", "value"]}
-
-
-def required_of(ob, name, format="text"):
-    return name, getattr(ob, name), format, True, {}
-
-
-def optional_of(ob, name, format="text"):
-    return name, getattr(ob, name), format, False, {}
+from pyramid_displayobject.displayobject import required_of
 
 
 def item_iterator(request, item, schema):
@@ -33,7 +21,7 @@ from pyramid_displayobject import (
 factory = DisplayObjectFactory(item_iterator, FieldFactory(WidgetManagement()))
 
 item0 = Item("Portion", "heal damage")
-dob0 = factory(None, item0, None)
+dob0 = factory(None, item0)
 
 
 print(dob0)

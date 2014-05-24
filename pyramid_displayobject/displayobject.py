@@ -24,7 +24,6 @@ class DisplayObjectFactory(object):
         self.field_factory = field_factory
 
     def __call__(self, request, ob, name="", schema=None):
-        schema = schema or get_schema(request, ob)
         iterator = self.iterator_factory(request, ob, schema)
         return DisplayObject(iterator, self.field_factory, ob)
 
@@ -100,6 +99,7 @@ def optional_of(ob, name, format="text"):
 
 
 def schema_iterator(request, ob, schema):
+    schema = schema or get_schema(request, ob)
     required = schema["required"]
     for name, sub in schema["properties"].items():
         yield name, getattr(ob, name), sub.get("widget", "text"), (name in required), {"label": sub.get("description", name)}
