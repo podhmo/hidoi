@@ -15,7 +15,19 @@ from .dynamicinterface import make_interface_from_class
 
 def edit(schema, k, val):
     if k not in schema:
-        raise KeyError("{} is not found in schema".format(k))
+        raise KeyError("{} is not found in schema(edit)".format(k))
+    schema[k] = val
+
+
+def default(schema, k, val):
+    if k in schema:
+        return
+    schema[k] = val
+
+
+def create(schema, k, val):
+    if k in schema:
+        raise KeyError("{} is found in schema(create)".format(k))
     schema[k] = val
 
 
