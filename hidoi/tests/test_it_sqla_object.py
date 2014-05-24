@@ -32,3 +32,7 @@ def test_it():
             assert isinstance(di, DisplayObject)
             assert di.created_at.required is False
 
+        #  get from class (using this on create form)
+        ditem = _callFUT(request, Item)
+        assert isinstance(ditem, DisplayObject)
+        assert print(ditem.name.value) is None

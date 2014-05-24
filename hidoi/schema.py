@@ -11,6 +11,7 @@ from .interfaces import (
     ISchemaFactory
 )
 from .dynamicinterface import make_interface_from_class
+from .langhelpers import model_of
 
 
 def edit(schema, k, val):
@@ -65,7 +66,7 @@ OneModelOnlySchemaFactory = CachedSchemaFactory(SchemaFactory(OneModelOnlyWalker
 
 
 def get_schema(request, model, name=""):
-    iface = make_interface_from_class(model.__class__)
+    iface = make_interface_from_class(model_of(model))
     adapters = request.registry.adapters
     return adapters.lookup([iface], ISchema, name)
 

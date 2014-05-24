@@ -12,6 +12,7 @@ from .interfaces import (
     IDisplayObject
 )
 from .dynamicinterface import make_interface_from_class
+from .langhelpers import model_of
 
 
 class UnSuppport(Exception):
@@ -98,6 +99,7 @@ def required_of(ob, name, format="text"):
 def optional_of(ob, name, format="text"):
     return name, getattr(ob, name), format, False, {}
 
+
 def schema_iterator(request, ob, schema):
     schema = schema or get_schema(request, ob)
     required = schema["required"]
@@ -107,7 +109,7 @@ def schema_iterator(request, ob, schema):
 
 def get_display(request, ob, name=""):
     adapters = request.registry.adapters
-    isrc = make_interface_from_class(ob.__class__)
+    isrc = make_interface_from_class(model_of(ob))
     factory = adapters.lookup([isrc], IDisplayObject, name)
     return factory(request, ob)
 
