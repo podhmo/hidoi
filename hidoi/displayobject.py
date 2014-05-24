@@ -40,9 +40,20 @@ class DisplayObject(object):
             field = field_factory(name, ob, value, widget, required, **kwargs)
             self._fieldnames.append(name)
             setattr(self, name, field)
+        self.unknown_errors = []
 
     def __repr__(self):
         return "<Disp:%s at 0x%x>" % (self.ob.__class__.__name__, id(self))
+
+    def merge_errors(self, errors):
+        for k, vs in errors:
+            field = getattr(self, k, None)
+            if field is None:
+                err = self.unknown_errors
+            else:
+                err = field.errors
+            for v in vs:
+                err.append(vs)
 
     def __iter__(self):
         for name in self._fieldnames:
@@ -83,11 +94,12 @@ class Field(object):
         attrs["ob"] = ob
         attrs["widget"] = widget
         attrs["required"] = required
+        attrs["errors"] = []
 
     def __repr__(self):
         fmt = ('Field[name={o.name!r}, value={o.value!r}, widget={o.widget!r}, '
-               'required={o.required!r}, kwargs={o.kwargs!r}]')
-        return fmt.format(o=self)
+               'required={o.required!r}, count_of_error={count_of_error}, kwargs={o.kwargs!r}]')
+        return fmt.format(o=self, count_of_error=len(self.errors))
 
     def __getattr__(self, name):
         return self.kwargs[name]
