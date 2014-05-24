@@ -3,7 +3,8 @@ from .displayobject import (
     DisplayObjectFactory,
     FieldFactory,
     WidgetManagement,
-    get_display
+    get_display,
+    display_config
 )
 from .schema import (
     SingleModelSchemaFactory,

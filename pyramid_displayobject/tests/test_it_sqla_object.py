@@ -1,27 +1,4 @@
 # -*- coding:utf-8 -*-
-import sqlalchemy as sa
-import sqlalchemy.orm as orm
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-
-
-class Item(Base):
-    __tablename__ = "items"
-    id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.String(255), default="", nullable=False)
-    value = sa.Column(sa.String(255), default="", nullable=False)
-    created_at = sa.Column(sa.DateTime())
-    bag_id = sa.Column(sa.Integer, sa.ForeignKey("bags.id"))
-    bag = orm.relationship("Bag", backref="items", uselist=False)
-
-
-class Bag(Base):
-    __tablename__ = "bags"
-    id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.String(255), default="", nullable=False)
-
-
 def _callFUT(*args, **kwargs):
     from pyramid_displayobject import get_display
     return get_display(*args, **kwargs)
@@ -30,7 +7,10 @@ def _callFUT(*args, **kwargs):
 def test_it():
     from pyramid.testing import testConfig
     from pyramid_displayobject.displayobject import DisplayObject
-
+    from pyramid_displayobject.tests.models import (
+        Item,
+        Bag
+    )
     with testConfig() as config:
         # configuration phase
         config.include("pyramid_displayobject")

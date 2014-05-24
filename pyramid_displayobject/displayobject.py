@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
+import venusian
 from .schema import (
     AlsoChildrenSchemaFactory,
     get_schema
@@ -97,7 +98,6 @@ def required_of(ob, name, format="text"):
 def optional_of(ob, name, format="text"):
     return name, getattr(ob, name), format, False, {}
 
-
 def schema_iterator(request, ob, schema):
     schema = schema or get_schema(request, ob)
     required = schema["required"]
@@ -112,6 +112,9 @@ def get_display(request, ob, name=""):
     return factory(request, ob)
 
 
+default_field_factory = FieldFactory(WidgetManagement())
+
+
 def add_display(
         config,
         model,
@@ -121,10 +124,9 @@ def add_display(
         excludes=None,
         overrides=None,
         depth=None,
-        field_factory=FieldFactory(WidgetManagement()),
+        field_factory=default_field_factory,
         schema_iterator=schema_iterator,
         schema_factory=AlsoChildrenSchemaFactory):
-
     model = config.maybe_dotted(model)
     modifier = config.maybe_dotted(modifier)
     schema = schema_factory(model, includes=includes, excludes=excludes, overrides=overrides, depth=depth)
@@ -141,7 +143,7 @@ def add_display(
             schema = get_schema(request, ob, name=name)
             template = schema.copy()
 
-            modified = modifier(request, template)
+            modified = modifier(request, ob, template)
             if modifier is None:
                 logger.warn("modifier return None: schema=%s", schema)
                 modified = template
@@ -149,6 +151,25 @@ def add_display(
             factory = request.registry.getUtility(IDisplayObjectFactory)
             return factory(request, ob, schema=modified, name=name)
         config.registry.adapters.register([isrc], IDisplayObject, name, create_display_object)
+
+
+def display_config(
+        model,
+        name="",
+        includes=None,
+        excludes=None,
+        overrides=None,
+        depth=None,
+        field_factory=default_field_factory,
+        schema_iterator=schema_iterator,
+        schema_factory=AlsoChildrenSchemaFactory):
+    def _display_config(modifier):
+        def callback(context, funcname, ob):
+            config = context.config.with_package(info.module)
+            config.add_display(model, modifier, name=name, includes=includes, excludes=excludes, overrides=overrides, depth=depth, field_factory=field_factory, schema_iterator=schema_iterator, schema_factory=schema_factory)
+        info = venusian.attach(modifier, callback, category='displayobject')
+        return modifier
+    return _display_config
 
 
 def includeme(config):

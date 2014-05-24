@@ -13,6 +13,12 @@ from .interfaces import (
 from .dynamicinterface import make_interface_from_class
 
 
+def edit(schema, k, val):
+    if k not in schema:
+        raise KeyError("{} is not found in schema".format(k))
+    schema[k] = val
+
+
 @implementer(ISchemaFactory)
 class CachedSchemaFactory(object):
     def __init__(self, schema_factory):
