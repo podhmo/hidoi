@@ -8,15 +8,15 @@ class Item(object):
 from hidoi.displayobject import required_of
 
 
-def item_iterator(request, item, schema):
+def item_iterator(request, item, schema, name=""):
     yield required_of(item, "name")
     yield required_of(item, "value")
 
-from hidoi import (
+from hidoi.displayobject import (
     DisplayObjectFactory,
-    FieldFactory,
-    WidgetManagement,
+    FieldFactory
 )
+from hidoi.widget import WidgetManagement
 
 factory = DisplayObjectFactory(item_iterator, FieldFactory(WidgetManagement()))
 

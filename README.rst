@@ -4,44 +4,23 @@ hidoi
 .. code:: python
 
     # -*- coding:utf-8 -*-
-    import sqlalchemy as sa
-    import sqlalchemy.orm as orm
-    from sqlalchemy.ext.declarative import declarative_base
-
-    Base = declarative_base()
-
-
-    class Item(Base):
-        __tablename__ = "items"
-        id = sa.Column(sa.Integer, primary_key=True)
-        name = sa.Column(sa.String(255), default="", nullable=False)
-        value = sa.Column(sa.String(255), default="", nullable=False)
-        created_at = sa.Column(sa.DateTime())
-        bag_id = sa.Column(sa.Integer, sa.ForeignKey("bags.id"))
-        bag = orm.relationship("Bag", backref="items", uselist=False)
-
-
-    class Bag(Base):
-        __tablename__ = "bags"
-        id = sa.Column(sa.Integer, primary_key=True)
-        name = sa.Column(sa.String(255), default="", nullable=False)
-
-
     def _callFUT(*args, **kwargs):
-        from hidoi import get_display
+        from hidoi.api import get_display
         return get_display(*args, **kwargs)
 
 
     def test_it():
-        from pyramid.testing import testConfig
+        from hidoi.testing import testConfigSlakky
         from hidoi.displayobject import DisplayObject
-
-        with testConfig() as config:
+        from hidoi.tests.models import (
+            Item,
+            Bag
+        )
+        with testConfigSlakky() as config:
             # configuration phase
-            config.include("hidoi")
-
             config.add_display(Item)
             config.add_display(Bag)
+            config.commit()
 
             # runtime phase
             request = config
@@ -57,4 +36,7 @@ hidoi
                 assert isinstance(di, DisplayObject)
                 assert di.created_at.required is False
 
-
+            #  get from class (using this on create form)
+            ditem = _callFUT(request, Item)
+            assert isinstance(ditem, DisplayObject)
+            assert print(ditem.name.value) is None

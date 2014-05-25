@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.exceptions import ConfigurationError
 from .interfaces import (
+    IModelModule,
     IWidgetManagement,
     IDisplayObjectFactory
 )
@@ -22,6 +23,8 @@ def register_verify_configuration(config):
     def closure():
         fmt = "{iface} is not registered. forget to call config.{directive}?"
         q = config.registry.queryUtility
+        if q(IModelModule) is None:
+            raise ConfigurationError(fmt.format(iface="IModelModule", directive="set_default_model_module"))
         if q(IWidgetManagement) is None:
             raise ConfigurationError(fmt.format(iface="IWidgetManagement", directive="add_mako_widget_management"))
 

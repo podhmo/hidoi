@@ -1,22 +1,12 @@
 # -*- coding:utf-8 -*-
-from .displayobject import (
-    DisplayObjectFactory,
-    FieldFactory,
-    WidgetManagement,
-    get_display,
-    display_config
-)
-from .schema import (
-    SingleModelSchemaFactory,
-    AlsoChildrenSchemaFactory,
-    OneModelOnlySchemaFactory,
-    get_schema
-)
-from .widget import (
-    get_widget_renderer
-)
+def set_default_model_module(config, module):
+    from .interfaces import IModelModule
+    module = config.maybe_dotted(module)
+    config.registry.registerUtility(module, IModelModule)
+
 
 def includeme(config):
+    config.add_directive("set_default_model_module", set_default_model_module)
     config.include(".dynamicinterface")
 
     config.include(".schema")

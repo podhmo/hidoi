@@ -1,21 +1,18 @@
 # -*- coding:utf-8 -*-
 def _callFUT(*args, **kwargs):
-    from hidoi import get_display
+    from hidoi.api import get_display
     return get_display(*args, **kwargs)
 
 
 def test_it():
-    from pyramid.testing import testConfig
+    from hidoi.testing import testConfigSlakky
     from hidoi.displayobject import DisplayObject
     from hidoi.tests.models import (
         Item,
         Bag
     )
-    with testConfig(autocommit=False) as config:
+    with testConfigSlakky() as config:
         # configuration phase
-        config.include("hidoi")
-        config.add_fixed_widget_management([])
-
         config.add_display(Item)
         config.add_display(Bag)
         config.commit()

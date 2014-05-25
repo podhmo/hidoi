@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from hidoi import display_config
+from hidoi.displayobject import display_config
 from hidoi.operate import edit
 from .models import Item
 

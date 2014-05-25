@@ -22,21 +22,17 @@ class Bag(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(255), default="", nullable=False)
 
-
-from hidoi import (
-    get_display,
-    DisplayObjectFactory,
-    FieldFactory,
-    WidgetManagement,
-)
+from hidoi.api import get_display
 from pyramid.testing import setUp as make_configurator
 
-config = make_configurator()
+config = make_configurator(autocommit=False)
 config.include("hidoi")
+config.set_default_model_module(locals())
+config.add_fixed_widget_management([])
 
 config.add_display(Item)
 config.add_display(Bag)
-
+config.commit()
 
 item0 = Item(name="portion", value="heal damage")
 bag0 = Bag(name="1stBag")

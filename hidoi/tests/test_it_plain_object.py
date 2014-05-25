@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
 def _getTarget():
-    from hidoi import DisplayObjectFactory
+    from hidoi.displayobject import DisplayObjectFactory
     return DisplayObjectFactory
 
 
 def _makeOne(iterator_factory):
-    from hidoi import (
-        FieldFactory,
-        WidgetManagement,
-    )
+    from hidoi.displayobject import FieldFactory
+    from hidoi.widget import WidgetManagement
     return _getTarget()(iterator_factory, FieldFactory(WidgetManagement()))
 
 

@@ -6,6 +6,11 @@ from zope.interface import (
 )
 
 
+class IModelModule(Interface):
+    """ model modules. (i.e. <application>.models)
+    """
+
+
 class ISchema(IDict):
     """ schema object, currently,  i expected jsonschema as member.
     """
@@ -24,6 +29,23 @@ class IField(Interface):
     widget = Attribute("widget string")
     errors = Attribute("errors list")
     required = Attribute("using or not when ")
+
+
+class IMapping(Interface):
+    def jsondict_from_object(ob):
+        """jsonify"""
+
+    def dict_from_jsondict(jsondict):
+        """normalize"""
+
+    def dict_from_object(ob):
+        """dictify"""
+
+    def object_from_dict(params, strict=True):
+        """objectify"""
+
+    def validate_all_jsondict(jsondict):
+        """validate all fields"""
 
 
 class ISchemaFactory(Interface):
