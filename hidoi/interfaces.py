@@ -66,3 +66,8 @@ class IWidgetManagement(Interface):
 class IWidgetRenderer(Interface):
     def render(**kwargs):
         pass
+
+
+class ISchemaConvertionRegistry(Interface):
+    jsonify = Attribute("jsonify_dict")
+    normalize = Attribute("normalize_dict")
