@@ -40,8 +40,8 @@ class DisplayObject(object):
         self.ob = ob
         self.field_factory = field_factory
         self._fieldnames = []
-        for name, value, widget, required, kwargs in iterator:
-            field = field_factory(name, ob, value, widget, required, **kwargs)
+        for name, value, widget, required, visible, kwargs in iterator:
+            field = field_factory(name, ob, value, widget, required, visible, **kwargs)
             self._fieldnames.append(name)
             setattr(self, name, field)
         self.unknown_errors = []
@@ -70,15 +70,15 @@ class FieldFactory(object):
         self.reserved = reserved[:]  # hmm.
         self.FieldClass = FieldClass or Field
 
-    def __call__(self, name, ob, val, widget, required, **kwargs):
+    def __call__(self, name, ob, val, widget, required, visible, **kwargs):
         if not self.widget_management.is_correct(widget):
             raise UnSuppport("widget {}".format(widget))
-        return self.FieldClass(name, ob, val, widget, required=required, **kwargs)
+        return self.FieldClass(name, ob, val, widget, required=required, visible=visible, **kwargs)
 
 
 @implementer(IField)
 class Field(object):
-    def __init__(self, name, ob, value, widget, required=True, **kwargs):
+    def __init__(self, name, ob, value, widget, required=True, visible=True, **kwargs):
         attrs = self.__dict__
         attrs["kwargs"] = kwargs
         attrs["name"] = name
@@ -86,6 +86,7 @@ class Field(object):
         attrs["ob"] = ob
         attrs["widget"] = widget
         attrs["required"] = required
+        attrs["visible"] = visible
         attrs["errors"] = []
 
     def __repr__(self):
@@ -101,19 +102,20 @@ class Field(object):
 
 
 def required_of(ob, name, format="text"):
-    return name, getattr(ob, name), format, True, {}
+    return name, getattr(ob, name), format, True, True, {}
 
 
 def optional_of(ob, name, format="text"):
-    return name, getattr(ob, name), format, False, {}
+    return name, getattr(ob, name), format, False, True, {}
 
 
 def schema_iterator(request, ob, schema, name=""):
     schema = schema or get_schema(request, ob, name=name)
     assert schema
     required = schema["required"]
+    visible = schema.get("visible", required)
     for name, sub in schema["properties"].items():
-        yield name, getattr(ob, name), sub.get("widget", "text"), (name in required), {"label": sub.get("description", name)}
+        yield name, getattr(ob, name), sub.get("widget", "text"), (name in required), (name in visible), {"label": sub.get("description", name)}
 
 
 def get_display(request, ob, name=""):
@@ -152,7 +154,7 @@ def add_display(
         def create_display_object(request, ob):
             schema = get_schema(request, ob, name=name)
             template = schema.copy()
-
+            template["visible"] = template["required"].copy()
             modified = modifier(request, ob, template)
             if modifier is None:
                 logger.warn("modifier return None: schema=%s", schema)

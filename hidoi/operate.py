@@ -27,18 +27,34 @@ def get(schema, k, val):
     return schema[k]
 
 
-def revive(schema, ks, name="required"):
+def revive(schema, ks, name="visible"):
     properties = get(schema, "properties")
-    required = get(schema, name)
+    visible = get(schema, name)
     for k in ks:
         if k not in properties:
             raise SchemaTreatException("{} is not participants of schema(revive)".format(k))
-        required.append(k)
+        visible.append(k)
 
 
-def reorder(schema, priorities, name="required"):
-    """required=[a, b, c] , priorities={a: 2, c:-10} => ((-10, c), (0, b), (2, a)) => [c, b, a]"""
-    required = get(schema, name)
-    candidates = [(priorities.get(e, 0), e) for e in required]
-    new_required = [e for _, e in sorted(candidates, key=lambda xs: xs[0])]
-    edit(schema, name, new_required)
+def add(schema, k, name="visible"):
+    visible = get(schema, name)
+    if k in visible:
+        return
+    visible.append(k)
+
+
+def remove(schema, k, name="visible"):
+    visible = get(schema, name)
+    try:
+        i = visible.index(k)
+        visible.pop(i)
+    except ValueError:
+        pass
+
+
+def reorder(schema, priorities, name="visible"):
+    """visible=[a, b, c] , priorities={a: 2, c:-10} => ((-10, c), (0, b), (2, a)) => [c, b, a]"""
+    visible = get(schema, name)
+    candidates = [(priorities.get(e, 0), e) for e in visible]
+    new_visible = [e for _, e in sorted(candidates, key=lambda xs: xs[0])]
+    edit(schema, name, new_visible)
