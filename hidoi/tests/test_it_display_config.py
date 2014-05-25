@@ -9,9 +9,10 @@ def test_it():
     from hidoi.displayobject import DisplayObject
     from hidoi.tests.models import Item
 
-    with testConfig() as config:
+    with testConfig(autocommit=False) as config:
         # configuration phase
         config.include("hidoi")
+        config.add_fixed_widget_management([])
         config.scan("hidoi.tests.all_fields_are_optional")
         config.commit()
 

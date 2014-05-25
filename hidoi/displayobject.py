@@ -182,12 +182,29 @@ def display_config(
     return _display_config
 
 
+def set_display_object_factory(config, factory=None):
+    def closure():
+        if factory is not None:
+            default_factory = factory
+        else:
+            widget_management = config.registry.queryUtility(IWidgetManagement)
+            if widget_management is None:
+                return
+            default_factory = factory or DisplayObjectFactory(schema_iterator, FieldFactory(widget_management))
+        config.registry.registerUtility(default_factory, IDisplayObjectFactory)
+
+    if factory is None:
+        from pyramid.interfaces import PHASE2_CONFIG
+        order = PHASE2_CONFIG
+    else:
+        order = None
+    config.action(None, closure, order=order)
+
+
 def includeme(config):
     config.include(".schema")
     config.include(".widget")
     config.add_directive("add_display", add_display)
-
+    config.add_directive("set_display_object_factory", set_display_object_factory)
     # it's is not good, but...
-    widget_management = config.registry.getUtility(IWidgetManagement)
-    default_factory = DisplayObjectFactory(schema_iterator, FieldFactory(widget_management))
-    config.registry.registerUtility(default_factory, IDisplayObjectFactory)
+    config.set_display_object_factory()

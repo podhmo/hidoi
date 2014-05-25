@@ -11,12 +11,14 @@ def test_it():
         Item,
         Bag
     )
-    with testConfig() as config:
+    with testConfig(autocommit=False) as config:
         # configuration phase
         config.include("hidoi")
+        config.add_fixed_widget_management([])
 
         config.add_display(Item)
         config.add_display(Bag)
+        config.commit()
 
         # runtime phase
         request = config

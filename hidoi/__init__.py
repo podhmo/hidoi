@@ -16,5 +16,10 @@ from .schema import (
 
 def includeme(config):
     config.include(".dynamicinterface")
+
     config.include(".schema")
+    config.include(".widget")
+
     config.include(".displayobject")
+
+    config.include(".verify")

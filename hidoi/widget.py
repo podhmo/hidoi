@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from zope.interface import implementer
 from .interfaces import IWidgetManagement
+from pyramid.path import AssetResolver
+
 
 default_widgets = ["text", "date-time"]  # xxx
 
@@ -17,5 +19,22 @@ class WidgetManagement(object):
         self.formats.add(widget)
 
 
+def add_mako_widget_management(config, widget_template_file_list):
+    formats = []
+    resolver = AssetResolver()
+    for assetspec in widget_template_file_list:
+        path = resolver.resolve(assetspec).abspath()
+        formats.extend(get_formats_from_mako_file(path))
+    config.registry.registerUtility(WidgetManagement(formats), IWidgetManagement)
+
+
+def add_fixed_widget_management(config, formats):
+    config.registry.registerUtility(WidgetManagement(formats), IWidgetManagement)
+
+def get_formats_from_mako_file(path):
+    return []
+
+
 def includeme(config):
-    config.registry.registerUtility(WidgetManagement(), IWidgetManagement)  # xxx
+    config.add_directive("add_mako_widget_management", add_mako_widget_management)
+    config.add_directive("add_fixed_widget_management", add_fixed_widget_management)
