@@ -15,7 +15,7 @@ from .interfaces import (
     IWidgetManagement
 )
 from .dynamicinterface import make_interface_from_class
-from .langhelpers import model_of
+from .langhelpers import model_of, funcname
 from .widget import WidgetManagement
 
 
@@ -145,6 +145,7 @@ def add_display(
     modifier = config.maybe_dotted(modifier)
     isrc = config.dynamic_interface(model)
 
+    config.inspect_model_action(model, name, 0, ("modifier", funcname(modifier)))  # traceability
     if modifier is None:
         def get_display_object__no_modified(request, ob):
             factory = request.registry.getUtility(IDisplayObjectFactory)

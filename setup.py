@@ -64,7 +64,10 @@ setup(name='hidoi',
           },
       tests_require = tests_require,
       cmdclass = {'test': PyTest},
-      entry_points = """      """
+      entry_points = """
+      [console_scripts]
+      pmapping = hidoi.scripts.pmapping:main
+      """
       )
 
 

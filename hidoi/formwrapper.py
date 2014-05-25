@@ -3,41 +3,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 import venusian
-import heapq
 from alchemyjsonschema.dictify import ErrorFound  # this is used. not delete.
 from .interfaces import IValidation
 from .dynamicinterface import make_interface_from_class
-from .langhelpers import model_of
+from .langhelpers import (
+    model_of,
+    funcname,
+    RepeatableSetQueue
+)
 from .mapping import get_mapping
 from .displayobject import get_display
-
-
-class RepeatableSetQueue(object):
-    def __init__(self, name=""):
-        self.name = name
-        self.cache = {}
-        self.result = []
-        self.q = []
-
-    def add(self, v, order=0):
-        if self.result:
-            raise Exception("already running. so not cannot add")
-        pk = id(v)
-        if pk not in self.cache:
-            self.cache[pk] = 1
-            heapq.heappush(self.q, (order, v))
-
-    def __iter__(self):
-        if self.result:
-            for e in self.result:
-                yield e
-        try:
-            while True:
-                e = heapq.heappop(self.q)
-                self.result.append(e)
-                yield e
-        except IndexError:
-            logger.info("*validation(%s): is finished. length=%d", self.name, len(self.result))
 
 
 def get_validation(request, model, name=""):
@@ -59,6 +34,7 @@ def get_validation(request, model, name=""):
 def add_validation(config, model, fn, name="", order=0):
     model = config.maybe_dotted(model)
     fn = config.maybe_dotted(fn)
+    config.inspect_model_action(model, name, order, ("validation", funcname(fn)))  # traceability
 
     adapters = config.registry.adapters
     isrc = make_interface_from_class(model_of(model))

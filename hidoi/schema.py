@@ -102,6 +102,7 @@ def get_schema(request, model, name=""):
 
 
 def add_schema(config, model, schema, name=""):
+    config.inspect_model_action(model, name, 0, ("schema", str(schema)))  # traceability
     isrc = config.dynamic_interface(model)
     register = config.registry.adapters.register
     register([isrc], ISchema, name, schema)

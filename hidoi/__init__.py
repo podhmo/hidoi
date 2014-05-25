@@ -18,8 +18,22 @@ def parse_option_from_config(config, settings_prefix="hidoi."):
         config.add_mako_widget_management([sget("widget.template_path")])
 
 
+def inspect_model_action(config, model, name, order, val=None):
+    try:
+        q = getattr(config.registry, "modelaction_list")
+        modelname = config.maybe_dotted(model).__name__
+        q.add((modelname, name, order, val))
+    except AttributeError:
+        config.registry.modelaction_list = set()
+        return inspect_model_action(config, model, name, order, val)
+    except TypeError as e:
+        from pyramid.exceptions import ConfigurationError
+        raise ConfigurationError("{}: value={}".format(e.args[0], val))
+
+
 def includeme(config):
     config.add_directive("set_default_model_module", set_default_model_module)
+    config.add_directive("inspect_model_action", inspect_model_action)
     config.include(".dynamicinterface")
 
     config.include(".schema")
