@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
 from zope.interface import implementer
-from .interfaces import IWidgetManagement
+from .interfaces import (
+    IWidgetManagement,
+    IWidgetRenderer
+)
 from pyramid.path import AssetResolver
-
+from mako.template import Template as MakoTemplate
 
 default_widgets = ["text", "date-time"]  # xxx
 
@@ -19,20 +22,37 @@ class WidgetManagement(object):
         self.formats.add(widget)
 
 
+def get_widget_renderer(request, dob, name="text"):
+    def_ = request.registry.getUtility(IWidgetRenderer, name=name)
+    return def_
+
+
 def add_mako_widget_management(config, widget_template_file_list):
     formats = []
     resolver = AssetResolver()
     for assetspec in widget_template_file_list:
         path = resolver.resolve(assetspec).abspath()
-        formats.extend(get_formats_from_mako_file(path))
+        for name, def_ in get_name_def_pairs_from_mako_file(path):
+            formats.append(name)
+        config.registry.registerUtility(def_, IWidgetRenderer, name=name)
     config.registry.registerUtility(WidgetManagement(formats), IWidgetManagement)
 
 
 def add_fixed_widget_management(config, formats):
     config.registry.registerUtility(WidgetManagement(formats), IWidgetManagement)
 
-def get_formats_from_mako_file(path):
-    return []
+
+def get_name_def_pairs_from_mako_file(path):
+    template = MakoTemplate(filename=path)
+    return iterate_mako_defs(template)
+
+
+def iterate_mako_defs(template):
+    for k in template.module.__dict__.keys():
+        if k.startswith("render_"):
+            if k.startswith("render__") or k == "render_body":
+                continue
+            yield k.split("render_", 1)[1], getattr(template.module, k)
 
 
 def includeme(config):

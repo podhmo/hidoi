@@ -16,7 +16,9 @@ except IOError:
 install_requires=[
     'setuptools',
     'pyramid',
-    "alchemyjsonschema"
+    "alchemyjsonschema",
+    'pyramid_mako',
+    'mako'
     ]
 
 docs_extras = [

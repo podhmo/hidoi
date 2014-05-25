@@ -39,3 +39,8 @@ class IDisplayObjectFactory(Interface):
 class IWidgetManagement(Interface):
     def is_correct(widget):
         pass
+
+
+class IWidgetRenderer(Interface):
+    def render(**kwargs):
+        pass
