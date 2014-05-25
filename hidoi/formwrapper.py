@@ -16,10 +16,10 @@ from .displayobject import get_display
 
 
 def get_validation(request, model, name=""):
-    isrc = make_interface_from_class(model)
+    isrc = make_interface_from_class(model_of(model))
     validations = request.registry.adapters.lookup([isrc], IValidation, name)
 
-    def execute(wrapper, data, something):
+    def execute(wrapper, data, something=None):
         model_cls_name = model_of(model).__name__
         if validations is None:
             logger.info("*validation(%s): validation is not found. model=%s", name, model_cls_name)
