@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-import heapq
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
 
@@ -29,16 +28,16 @@ class RepeatableSetQueue(object):
         pk = id(v)
         if pk not in self.cache:
             self.cache[pk] = 1
-            heapq.heappush(self.q, (order, v))
+            self.q.append((order, v))
 
     def __iter__(self):
         if self.result:
             for e in self.result:
                 yield e
-        try:
-            while True:
-                e = heapq.heappop(self.q)
+        else:
+            logger.info("*validation(%s): is starting. length=%d", self.name, len(self.q))
+            itr = sorted(self.q, key=lambda x: x[0])
+            for _, e in itr:
                 self.result.append(e)
                 yield e
-        except IndexError:
             logger.info("*validation(%s): is finished. length=%d", self.name, len(self.result))

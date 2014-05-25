@@ -24,7 +24,7 @@ def get_validation(request, model, name=""):
         if validations is None:
             logger.info("*validation(%s): validation is not found. model=%s", name, model_cls_name)
             return data
-        for _, v in validations:
+        for v in validations:
             logger.debug("*validation(%s): function=%s. model=%s", name, v, model_cls_name)
             data = v(wrapper, data, something)
         return data
@@ -38,7 +38,7 @@ def add_validation(config, model, fn, name="", order=0):
 
     adapters = config.registry.adapters
     isrc = make_interface_from_class(model_of(model))
-    validations = adapters.lookup([isrc], IValidation)
+    validations = adapters.lookup([isrc], IValidation, name)
     if validations is None:
         queue = RepeatableSetQueue("{}:{}".format(model_of(model).__name__, name))
         queue.add(fn, order=order)
