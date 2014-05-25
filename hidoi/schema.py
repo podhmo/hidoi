@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
 from zope.interface import implementer
+from pyramid.exceptions import ConfigurationError
 from alchemyjsonschema import (
     SchemaFactory,
     AlsoChildrenWalker,
-    SingleModelWalker,
-    OneModelOnlyWalker,
     Classifier
 )
 from alchemyjsonschema.mapping import (
@@ -64,7 +63,17 @@ def get_schema_convertion(request):
     return request.registry.queryUtility(ISchemaConvertionRegistry) or DefaultRegistry
 
 
-def add_schema_convertion(config, format_name, jsonify, normalize, type_name="string"):
+def add_sqla_column_convertion(config, column_type, to_schema=None, restriction=None):
+    def closure():
+        reg = config.registry.getUtility(ISchemaConvertionRegistry)
+        if to_schema is not None:
+            reg.column_to_schema[column_type] = to_schema
+        if restriction:
+            reg.restriction[column_type] = restriction
+    config.action(None, closure)
+
+
+def add_schema_convertion(config, format_name, jsonify=None, normalize=None, type_name="string"):
     def closure():
         reg = config.registry.getUtility(ISchemaConvertionRegistry)
         k = (type_name, format_name)
@@ -102,5 +111,6 @@ def add_schema(config, model, schema, name=""):
 def includeme(config):
     config.add_directive("add_schema", add_schema)
     config.add_directive("add_schema_convertion", add_schema_convertion)
+    config.add_directive("add_sqla_column_convertion", add_sqla_column_convertion)
     config.registry.registerUtility(MyConversionRegistry(), ISchemaConvertionRegistry)
 
