@@ -185,7 +185,7 @@ def display_config(
         def callback(context, funcname, ob):
             config = context.config.with_package(info.module)
             config.add_display(model, modifier, name=name, includes=includes, excludes=excludes, overrides=overrides, depth=depth, field_factory=field_factory, schema_iterator=schema_iterator, walker=walker)
-        info = venusian.attach(modifier, callback, category='displayobject')
+        info = venusian.attach(modifier, callback, category='hidoi.displayobject')
         return modifier
     return _display_config
 

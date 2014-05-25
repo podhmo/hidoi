@@ -27,6 +27,7 @@ def includeme(config):
 
     config.include(".displayobject")
     config.include(".mapping")
+    config.include(".formwrapper")
 
     config.include(".verify")
     parse_option_from_config(config, settings_prefix="hidoi.")

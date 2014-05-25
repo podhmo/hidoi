@@ -73,3 +73,11 @@ class ISchemaConvertionRegistry(Interface):
     normalize = Attribute("normalize_dict. (type, format) => (val -> val2)")
     restriction = Attribute("restriction dict. t.Column => (val -> unit())")
     column_to_schema = Attribute("t.Column => string[jsonschema.type]")
+
+
+class IValidation(Interface):
+    def __call__(form, data, something=None):
+        """
+        if failure. raise ErrorFound Exception.
+        if success return validated data(usually this is dict)
+        """
