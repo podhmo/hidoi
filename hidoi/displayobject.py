@@ -57,7 +57,7 @@ class DisplayObject(object):
             else:
                 err = field.errors
             for v in vs:
-                err.append(vs)
+                err.append(v)
 
     def __iter__(self):
         for name in self._fieldnames:
