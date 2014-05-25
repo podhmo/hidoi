@@ -18,7 +18,7 @@ def normalize_invalid_call(val):
 
 def test_it0():
     from hidoi.testing import testConfigSlakky
-    from hidoi.mapping import DefaultRegistry
+    from hidoi.schema import DefaultRegistry
     with testConfigSlakky() as config:
         # configuration phase
         config.commit()
@@ -38,10 +38,10 @@ def test_it0():
 
 def test_it__swapping_jsonify():
     from hidoi.testing import testConfigSlakky
-    from hidoi.mapping import DefaultRegistry
+    from hidoi.schema import DefaultRegistry
     with testConfigSlakky() as config:
         # configuration phase
-        config.add_schema_conversion("date-time", jsonify=jsonify_invalid_call, normalize=None)
+        config.add_schema_convertion("date-time", jsonify=jsonify_invalid_call, normalize=None)
         config.commit()
 
         # runtime phase
@@ -54,10 +54,10 @@ def test_it__swapping_jsonify():
 
 def test_it__swapping_normalize():
     from hidoi.testing import testConfigSlakky
-    from hidoi.mapping import DefaultRegistry
+    from hidoi.schema import DefaultRegistry
     with testConfigSlakky() as config:
         # configuration phase
-        config.add_schema_conversion("date-time", normalize=normalize_invalid_call, jsonify=None)
+        config.add_schema_convertion("date-time", normalize=normalize_invalid_call, jsonify=None)
         config.commit()
 
         # runtime phase

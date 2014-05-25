@@ -69,5 +69,7 @@ class IWidgetRenderer(Interface):
 
 
 class ISchemaConvertionRegistry(Interface):
-    jsonify = Attribute("jsonify_dict")
-    normalize = Attribute("normalize_dict")
+    jsonify = Attribute("jsonify_dict. (type, format) => (val -> val2)")
+    normalize = Attribute("normalize_dict. (type, format) => (val -> val2)")
+    restriction = Attribute("restriction dict. t.Column => (val -> unit())")
+    column_to_schema = Attribute("t.Column => string[jsonschema.type]")
