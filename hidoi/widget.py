@@ -5,6 +5,7 @@ from .interfaces import (
     IWidgetRenderer
 )
 from pyramid.path import AssetResolver
+from pyramid.exceptions import ConfigurationError
 from mako.template import Template as MakoTemplate
 
 default_widgets = ["text", "date-time"]  # xxx
@@ -27,13 +28,15 @@ def get_widget_renderer(request, name="text"):
     return def_
 
 
-def add_mako_widget_management(config, widget_template_file_list):
-    formats = []
+def add_mako_widget_management(config, widget_template_file_list, overwrite=False):
+    formats = set()
     resolver = AssetResolver()
     for assetspec in widget_template_file_list:
         path = resolver.resolve(assetspec).abspath()
         for name, def_ in get_name_def_pairs_from_mako_file(path):
-            formats.append(name)
+            if not overwrite and name in formats:
+                raise ConfigurationError("widget {} is existed, already. conflicted".format(name))
+            formats.add(name)
         config.registry.registerUtility(def_, IWidgetRenderer, name=name)
     config.registry.registerUtility(WidgetManagement(formats), IWidgetManagement)
 
