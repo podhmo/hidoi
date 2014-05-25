@@ -1,6 +1,16 @@
 hidoi
 ========================================
 
+options
+----------------------------------------
+
+* hidoi.widget.template_path (e.g. foo.templates/helpers.mako)
+* hidoi.model.module (e.g. foo.models)
+
+
+how to use
+----------------------------------------
+
 .. code:: python
 
     # -*- coding:utf-8 -*-
