@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from collections import defaultdict
+
 def set_default_model_module(config, module):
     from .interfaces import IModelModule
     module = config.maybe_dotted(module)
@@ -17,11 +19,17 @@ def parse_option_from_config(config, settings_prefix="hidoi."):
     if sget("widget.template_path"):
         config.add_mako_widget_management([sget("widget.template_path")])
 
+c = defaultdict(float)
+
 
 def inspect_model_action(config, model, name, order, val=None):
     try:
         q = getattr(config.registry, "modelaction_list")
         modelname = config.maybe_dotted(model).__name__
+        if order == 0:
+            k = (model, name, val[0])
+            order = c[k]
+            c[k] += 0.01
         q.add((modelname, name, order, val))
     except AttributeError:
         config.registry.modelaction_list = set()
