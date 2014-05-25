@@ -26,4 +26,4 @@ def test_collect_def():
 
     assert len(result) == 2
     assert sorted([name for name, _ in result]) == ["select", "text"]
-    assert sorted(result)[0][1] == template._get_def_callable("select")
+    assert sorted(result)[0][1].callable_ == template.get_def("select").callable_

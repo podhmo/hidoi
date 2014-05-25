@@ -22,7 +22,7 @@ class WidgetManagement(object):
         self.formats.add(widget)
 
 
-def get_widget_renderer(request, dob, name="text"):
+def get_widget_renderer(request, name="text"):
     def_ = request.registry.getUtility(IWidgetRenderer, name=name)
     return def_
 
@@ -52,7 +52,9 @@ def iterate_mako_defs(template):
         if k.startswith("render_"):
             if k.startswith("render__") or k == "render_body":
                 continue
-            yield k.split("render_", 1)[1], getattr(template.module, k)
+            if hasattr(template.module, k):
+                name = k.split("render_", 1)[1]
+                yield name, template.get_def(name)
 
 
 def includeme(config):

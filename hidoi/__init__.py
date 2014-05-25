@@ -12,7 +12,9 @@ from .schema import (
     OneModelOnlySchemaFactory,
     get_schema
 )
-
+from .widget import (
+    get_widget_renderer
+)
 
 def includeme(config):
     config.include(".dynamicinterface")
