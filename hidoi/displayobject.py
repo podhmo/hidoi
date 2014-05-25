@@ -126,8 +126,6 @@ def get_display(request, ob, name=""):
     return factory(request, ob)
 
 
-default_field_factory = FieldFactory(WidgetManagement())
-
 
 def add_display(
         config,
@@ -138,7 +136,6 @@ def add_display(
         excludes=None,
         overrides=None,
         depth=None,
-        field_factory=default_field_factory,
         schema_iterator=schema_iterator,
         walker=AlsoChildrenWalker):
     model = config.maybe_dotted(model)
@@ -179,13 +176,12 @@ def display_config(
         excludes=None,
         overrides=None,
         depth=None,
-        field_factory=default_field_factory,
         schema_iterator=schema_iterator,
         walker=AlsoChildrenWalker):
     def _display_config(modifier):
         def callback(context, funcname, ob):
             config = context.config.with_package(info.module)
-            config.add_display(model, modifier, name=name, includes=includes, excludes=excludes, overrides=overrides, depth=depth, field_factory=field_factory, schema_iterator=schema_iterator, walker=walker)
+            config.add_display(model, modifier, name=name, includes=includes, excludes=excludes, overrides=overrides, depth=depth, schema_iterator=schema_iterator, walker=walker)
         info = venusian.attach(modifier, callback, category='hidoi.displayobject')
         return modifier
     return _display_config
