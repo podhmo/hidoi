@@ -21,10 +21,14 @@ def new(schema, k, val):
     schema[k] = val
 
 
-def get(schema, k, val):
+def get(schema, k):
     if k not in schema:
         raise SchemaTreatException("{} is not found in schema(get)".format(k))
     return schema[k]
+
+
+def allvisible(schema, name="visible"):
+    revive(schema, [k for k in schema["properties"]], name)
 
 
 def revive(schema, ks, name="visible"):
