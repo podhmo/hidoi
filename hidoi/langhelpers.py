@@ -19,6 +19,18 @@ def funcname(fn):
     return "{}:{}".format(fn.__module__, fn.__name__)
 
 
+def wrap_repetable_set_queue(D, name, k, val):
+    v = D.get(k)
+    if v is None:
+        v = D[k] = RepeatableSetQueue(name)
+    elif isinstance(v, RepeatableSetQueue):
+        v.add(val)
+    else:
+        D[k] = q = RepeatableSetQueue(name)
+        q.add(v)
+        q.add(val)
+
+
 class RepeatableSetQueue(object):
     def __init__(self, name=""):
         self.name = name
@@ -45,3 +57,7 @@ class RepeatableSetQueue(object):
                 self.result.append(e)
                 yield e
             logger.info("*validation(%s): is finished. length=%d", self.name, len(self.result))
+
+    def __call__(self, *args, **kwargs):
+        for fn in self:
+            fn(*args, **kwargs)

@@ -15,7 +15,11 @@ from .interfaces import (
     ISchemaConvertionRegistry
 )
 from .dynamicinterface import make_interface_from_class
-from .langhelpers import model_of
+from .langhelpers import (
+    model_of,
+    RepeatableSetQueue,
+    wrap_repetable_set_queue
+)
 
 
 @implementer(ISchemaFactory)
@@ -33,6 +37,9 @@ class CachedSchemaFactory(object):
             return tuple(x.items())
         else:
             return x
+
+    def __getattr__(self, k):
+        return getattr(self.schema_factory, k)
 
     def __call__(self, src, includes=None, excludes=None, overrides=None, depth=None):
         k_includes = self.for_cache(includes)
@@ -52,15 +59,15 @@ DefaultRegistry = implementer(ISchemaConvertionRegistry)(DefaultRegistry)
 
 @implementer(ISchemaConvertionRegistry)
 class MyConversionRegistry(object):
-    def __init__(self):
-        self.jsonify = DefaultRegistry.jsonify.copy()
-        self.normalize = DefaultRegistry.normalize.copy()
-        self.restriction = DefaultRegistry.restriction.copy()
-        self.column_to_schema = DefaultRegistry.column_to_schema.copy()
+    def __init__(self, convertion_registry=DefaultRegistry):
+        self.jsonify = convertion_registry.jsonify.copy()
+        self.normalize = convertion_registry.normalize.copy()
+        self.restriction = convertion_registry.restriction.copy()
+        self.column_to_schema = convertion_registry.column_to_schema.copy()
 
 
 def get_schema_convertion(request):
-    return request.registry.queryUtility(ISchemaConvertionRegistry) or DefaultRegistry
+    return request.registry.getUtility(ISchemaConvertionRegistry)
 
 
 def add_sqla_column_convertion(config, column_type, to_schema=None, restriction=None):
@@ -69,8 +76,19 @@ def add_sqla_column_convertion(config, column_type, to_schema=None, restriction=
         if to_schema is not None:
             reg.column_to_schema[column_type] = to_schema
         if restriction:
-            reg.restriction[column_type] = restriction
+            wrap_repetable_set_queue(reg.restriction, str(column_type), column_type, restriction)
     config.action(None, closure)
+
+def wrap_repetable_set_queue(D, name, k, val):
+    v = D.get(k)
+    if v is None:
+        v = D[k] = RepeatableSetQueue(name)
+    elif isinstance(v, RepeatableSetQueue):
+        v.add(val)
+    else:
+        D[k] = q = RepeatableSetQueue(name)
+        q.add(v)
+        q.add(val)
 
 
 def add_schema_convertion(config, format_name, jsonify=None, normalize=None, type_name="string"):
@@ -90,8 +108,9 @@ def get_schema_factory(request, walker=AlsoChildrenWalker):
     schema_factory = adapters.lookup([isrc], ISchemaFactory)
     if schema_factory is None:
         sreg = get_schema_convertion(request)
-        schema_factory = CachedSchemaFactory(SchemaFactory(walker, classifier=Classifier(sreg.column_to_schema)))
-        adapters.register([isrc], ISchemaFactory, "", schema_factory)
+        classifier = Classifier(sreg.column_to_schema)
+        schema_factory = SchemaFactory(walker, classifier=classifier, restriction_dict=sreg.restriction)
+        adapters.register([isrc], ISchemaFactory, "", CachedSchemaFactory(schema_factory))
     return schema_factory
 
 

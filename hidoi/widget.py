@@ -8,12 +8,10 @@ from pyramid.path import AssetResolver
 from pyramid.exceptions import ConfigurationError
 from mako.template import Template as MakoTemplate
 
-default_widgets = set(["text", "date-time"])  # xxx
-
 
 @implementer(IWidgetManagement)
 class WidgetManagement(object):
-    def __init__(self, widgets=default_widgets):
+    def __init__(self, widgets):
         self.widgets = widgets
 
     def is_correct(self, widget):

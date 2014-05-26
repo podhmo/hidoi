@@ -7,7 +7,7 @@ def _getTarget():
 def _makeOne(iterator_factory):
     from hidoi.displayobject import FieldFactory
     from hidoi.widget import WidgetManagement
-    return _getTarget()(iterator_factory, FieldFactory(WidgetManagement()))
+    return _getTarget()(iterator_factory, FieldFactory(WidgetManagement(["text"])))
 
 
 class Item(object):

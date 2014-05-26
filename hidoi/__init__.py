@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from collections import defaultdict
 
+
 def set_default_model_module(config, module):
     from .interfaces import IModelModule
     module = config.maybe_dotted(module)

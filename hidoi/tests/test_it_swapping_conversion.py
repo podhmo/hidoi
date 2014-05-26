@@ -12,8 +12,8 @@ def normalize_invalid_call(val):
     pass
 
 
-def restriction_invalid_call(val):
-    pass
+def restriction_invalid_call(column, type):
+    raise Exception("invalid")
 
 
 def test_it0():
@@ -93,7 +93,8 @@ def test_it_swapping_to_schema():
 def test_it_swapping_restriction():
     import sqlalchemy.types as t
     from hidoi.testing import testConfigSlakky
-    from hidoi.schema import DefaultRegistry
+    import pytest
+
     with testConfigSlakky() as config:
         # configuration phase
         config.add_sqla_column_convertion(t.DateTime, restriction=restriction_invalid_call)
@@ -103,5 +104,7 @@ def test_it_swapping_restriction():
         request = config
 
         result = _callFUT(request)
-        assert result.restriction[t.DateTime] == restriction_invalid_call
-        assert result.column_to_schema[t.Integer] == DefaultRegistry.column_to_schema[t.Integer]
+
+        with pytest.raises(Exception):
+            for fn in result.restriction[t.DateTime]:
+                fn(None, None)
