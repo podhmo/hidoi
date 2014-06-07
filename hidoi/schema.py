@@ -61,6 +61,7 @@ class MyConversionRegistry(object):
     def __init__(self, convertion_registry=DefaultRegistry):
         self.jsonify = convertion_registry.jsonify.copy()
         self.normalize = convertion_registry.normalize.copy()
+        self.prepare = convertion_registry.prepare.copy()
         self.restriction = convertion_registry.restriction.copy()
         self.column_to_schema = convertion_registry.column_to_schema.copy()
 

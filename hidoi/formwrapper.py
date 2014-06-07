@@ -88,10 +88,12 @@ def validation_config(model, name="", order=0):
 
 class FormWrapper(object):
     def __init__(self, request, model, name="",
+                 need_prepare=True,  # POST True but, json_body False
                  get_mapping=get_mapping,
                  get_validation=get_validation,
                  get_display=get_display):
         self.request = request
+        self.need_prepare = need_prepare
         self.mapping = get_mapping(request, model, name)
         self.model = model
         self.name = name
@@ -120,6 +122,8 @@ class FormWrapper(object):
     def validate(self, data, something=None):
         self.rawdata = data
 
+        if self.need_prepare:
+            data = self.mapping.jsondict_from_string_only_dict(data)
         self.schema_validation(data)
         data = self.mapping.dict_from_jsondict(data)
         validation = self.get_validation(self.request, self.model, self.name)
@@ -128,8 +132,10 @@ class FormWrapper(object):
             return data
         return validation(self, data, something)
 
-    def to_displayobject(self):
-        return self.get_display(self.request, self.model, self.name)
+    def to_displayobject(self, data=None):
+        data = data or self.rawdata
+        ob = self.mapping.object_from_dict(data, strict=False)
+        return self.get_display(self.request, ob, self.name)
 
 
 class Something(dict):

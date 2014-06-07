@@ -51,7 +51,7 @@ class DisplayObject(object):
         return "<Disp:%s at 0x%x>" % (self.ob.__class__.__name__, id(self))
 
     def merge_errors(self, errors):
-        for k, vs in errors:
+        for k, vs in get_pairs_iterator(errors):
             field = getattr(self, k, None)
             if field is None:
                 err = self.unknown_errors
@@ -65,10 +65,16 @@ class DisplayObject(object):
             yield getattr(self, name)
 
 
+def get_pairs_iterator(xs):
+    if hasattr(xs, "items"):
+        return xs.items()
+    else:
+        return iter(xs)
+
+
 class FieldFactory(object):
-    def __init__(self, widget_management, reserved=["name", "widget"], FieldClass=None):
+    def __init__(self, widget_management, FieldClass=None):
         self.widget_management = widget_management
-        self.reserved = reserved[:]  # hmm.
         self.FieldClass = FieldClass or Field
 
     def __call__(self, name, ob, val, widget, required, visible, **kwargs):
