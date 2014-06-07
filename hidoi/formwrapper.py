@@ -110,7 +110,6 @@ class FormWrapper(object):
 
     def schema_validation(self, data):
         try:
-            data = self.mapping.dict_from_jsondict(data)
             self.mapping.validate_all_jsondict(data)
             return data
         except Exception as e:
@@ -121,8 +120,8 @@ class FormWrapper(object):
     def validate(self, data, something=None):
         self.rawdata = data
 
-        data = self.schema_validation(data)
-
+        self.schema_validation(data)
+        data = self.mapping.dict_from_jsondict(data)
         validation = self.get_validation(self.request, self.model, self.name)
         if validation is None:
             logger.info("validation is not found model=%s, name=%s", self.model, self.name)

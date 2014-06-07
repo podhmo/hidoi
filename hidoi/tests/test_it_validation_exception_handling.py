@@ -31,7 +31,7 @@ def test_schema_validation_success():
         request = _makeRequest(config)
         target = _makeOne(request, models.Bag)
 
-        data = {"name": "foo", "id": "1"}
+        data = {"name": "foo", "id": 1}
         result = target.validate(data)
 
         assert result == {"name": "foo", "id": 1, "items": []}
