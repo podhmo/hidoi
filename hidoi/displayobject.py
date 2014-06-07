@@ -89,7 +89,7 @@ class Field(object):
         attrs = self.__dict__
         attrs["kwargs"] = kwargs
         attrs["name"] = name
-        attrs["value"] = value
+        attrs["_value"] = value
         attrs["ob"] = ob
         attrs["widget"] = widget
         attrs["required"] = required
@@ -100,6 +100,12 @@ class Field(object):
         fmt = ('Field[name={o.name!r}, value={o.value!r}, widget={o.widget!r}, '
                'required={o.required!r}, count_of_error={count_of_error}, kwargs={o.kwargs!r}]')
         return fmt.format(o=self, count_of_error=len(self.errors))
+
+    @property
+    def value(self):
+        if self._value is None:
+            return ""
+        return self._value
 
     def __getattr__(self, name):
         return self.kwargs[name]
@@ -133,6 +139,8 @@ def schema_iterator(request, ob, schema, name=""):
                 widget = "array"
             elif sub["type"] == "object":
                 widget = "object"
+            elif sub["type"] == "boolean":
+                widget = "boolean"
         except KeyError:
             widget = "object"
         kwargs = {"label": sub.get("description", name)}

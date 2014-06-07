@@ -110,10 +110,19 @@ class FormWrapper(object):
     def errors(self):
         return defaultdict(list)
 
+    def prepare_validation(self, data):
+        dels = []
+        for k, v in data.items():
+            if v == "":
+                dels.append(k)
+        for k in dels:
+            data.pop(k)
+        return self.mapping.jsondict_from_string_only_dict(data)
+
     def schema_validation(self, data):
         try:
             if self.need_prepare:
-                data = self.mapping.jsondict_from_string_only_dict(data)
+                data = self.prepare_validation(data)
             self.mapping.validate_all_jsondict(data)
             return data
         except Exception as e:
@@ -174,7 +183,7 @@ def jsonschema_error_handler(state, exc):
     for e in exc.errors:
         if e.validator == "required":
             m = required_name_rx.search(e.message)
-            state[m.group(1)] = e.message
+            state[m.group(1)].append(e.message)
         else:
             state[e.path[0]].append(e.message)
     return state
