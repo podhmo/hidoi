@@ -81,3 +81,16 @@ class IValidation(Interface):
         if failure. raise ErrorFound Exception.
         if success return validated data(usually this is dict)
         """
+
+
+class IHandlerLookup(Interface):
+    def lookup(self, exception):
+        pass
+
+    def add(self, exception, handler):
+        pass
+
+
+class IExceptionHandler(Interface):
+    def __call__(state, excepction):
+        pass

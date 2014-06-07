@@ -17,7 +17,6 @@ from .interfaces import (
 from .dynamicinterface import make_interface_from_class
 from .langhelpers import (
     model_of,
-    RepeatableSetQueue,
     wrap_repetable_set_queue
 )
 
@@ -78,17 +77,6 @@ def add_sqla_column_convertion(config, column_type, to_schema=None, restriction=
         if restriction:
             wrap_repetable_set_queue(reg.restriction, str(column_type), column_type, restriction)
     config.action(None, closure)
-
-def wrap_repetable_set_queue(D, name, k, val):
-    v = D.get(k)
-    if v is None:
-        v = D[k] = RepeatableSetQueue(name)
-    elif isinstance(v, RepeatableSetQueue):
-        v.add(val)
-    else:
-        D[k] = q = RepeatableSetQueue(name)
-        q.add(v)
-        q.add(val)
 
 
 def add_schema_convertion(config, format_name, jsonify=None, normalize=None, type_name="string"):
