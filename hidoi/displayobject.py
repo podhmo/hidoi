@@ -122,6 +122,9 @@ def schema_iterator(request, ob, schema, name=""):
 
     required = schema["required"]
     visible = schema.get("visible", required)
+
+    use_default = model_of(ob) == ob
+
     for name, sub in schema["properties"].items():
         # individual
         widget = sub.get("widget", "text")
@@ -132,8 +135,9 @@ def schema_iterator(request, ob, schema, name=""):
                 widget = "object"
         except KeyError:
             widget = "object"
-
-        yield name, getattr(ob, name), widget, (name in required), (name in visible), {"label": sub.get("description", name)}
+        kwargs = {"label": sub.get("description", name)}
+        value = "" if use_default else getattr(ob, name)
+        yield name, value, widget, (name in required), (name in visible), kwargs
 
 
 def get_display(request, ob, name=""):
