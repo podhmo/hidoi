@@ -119,10 +119,21 @@ def optional_of(ob, name, format="text"):
 def schema_iterator(request, ob, schema, name=""):
     schema = schema or get_schema(request, ob, name=name)
     assert schema
+
     required = schema["required"]
     visible = schema.get("visible", required)
     for name, sub in schema["properties"].items():
-        yield name, getattr(ob, name), sub.get("widget", "text"), (name in required), (name in visible), {"label": sub.get("description", name)}
+        # individual
+        widget = sub.get("widget", "text")
+        try:
+            if sub["type"] == "array":
+                widget = "array"
+            elif sub["type"] == "object":
+                widget = "object"
+        except KeyError:
+            widget = "object"
+
+        yield name, getattr(ob, name), widget, (name in required), (name in visible), {"label": sub.get("description", name)}
 
 
 def get_display(request, ob, name=""):
