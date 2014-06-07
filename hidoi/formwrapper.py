@@ -112,6 +112,8 @@ class FormWrapper(object):
 
     def schema_validation(self, data):
         try:
+            if self.need_prepare:
+                data = self.mapping.jsondict_from_string_only_dict(data)
             self.mapping.validate_all_jsondict(data)
             return data
         except Exception as e:
@@ -122,8 +124,6 @@ class FormWrapper(object):
     def validate(self, data, something=None):
         self.rawdata = data
 
-        if self.need_prepare:
-            data = self.mapping.jsondict_from_string_only_dict(data)
         self.schema_validation(data)
         data = self.mapping.dict_from_jsondict(data)
         validation = self.get_validation(self.request, self.model, self.name)
