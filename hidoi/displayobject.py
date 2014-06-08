@@ -211,7 +211,7 @@ def add_display(
         includes=None,
         excludes=None,
         overrides=None,
-        depth=None,
+        depth=2,
         iterator_factory=SchemaIteratorFactory,
         walker=AlsoChildrenWalker):
     model = config.maybe_dotted(model)
@@ -251,7 +251,7 @@ def display_config(
         includes=None,
         excludes=None,
         overrides=None,
-        depth=None,
+        depth=2,
         iterator_factory=SchemaIteratorFactory,
         walker=AlsoChildrenWalker):
     def _display_config(modifier):
