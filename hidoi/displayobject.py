@@ -25,26 +25,23 @@ class UnSuppport(Exception):
 
 @implementer(IDisplayObjectFactory)
 class DisplayObjectFactory(object):
-    def __init__(self, iterator_factory, field_factory):
+    def __init__(self, iterator_factory):
         self.iterator_factory = iterator_factory
-        self.field_factory = field_factory
 
     def __call__(self, request, ob, name="", schema=None):
         iterator = self.iterator_factory(request, ob, schema, name=name)
-        return DisplayObject(iterator, self.field_factory, ob)
+        return DisplayObject(iterator, ob)
 
 
 @implementer(IDisplayObject)
 class DisplayObject(object):
-    def __init__(self, iterator, field_factory, ob):
+    def __init__(self, iterator, ob):
         self.iterator = iterator
         self.ob = ob
-        self.field_factory = field_factory
         self._fieldnames = []
-        for name, value, widget, required, visible, kwargs in iterator:
-            field = field_factory(name, ob, value, widget, required, visible, **kwargs)
-            self._fieldnames.append(name)
-            setattr(self, name, field)
+        for field in iterator:
+            self._fieldnames.append(field.name)
+            setattr(self, field.name, field)
         self.unknown_errors = []
 
     def __repr__(self):
@@ -115,41 +112,64 @@ class Field(object):
 
 
 def required_of(ob, name, format="text"):
-    return name, getattr(ob, name), format, True, True, {}
+    return Field(name, ob, getattr(ob, name), format, True, True)
 
 
 def optional_of(ob, name, format="text"):
-    return name, getattr(ob, name), format, False, True, {}
+    return Field(name, ob, getattr(ob, name), format, False, True)
 
 
-def schema_iterator(request, ob, schema, name=""):
-    schema = schema or get_schema(request, ob, name=name)
-    assert schema
+class SchemaIteratorFactory(object):
+    def __init__(self, field_factory):
+        self.field_factory = field_factory
 
-    required = schema["required"]
-    visible = schema.get("visible", required)
-
-    use_default = model_of(ob) == ob
-
-    for name, sub in schema["properties"].items():
-        # individual
-        widget = sub.get("widget", "text")
+    def detect_widget(self, sub):
         try:
             if sub["type"] == "array":
-                widget = "array"
+                return "array"
             elif sub["type"] == "object":
-                widget = "object"
+                return "object"
             elif sub["type"] == "boolean":
-                widget = "boolean"
+                return "boolean"
             elif sub["type"] == "integer":
-                widget = "number"
+                return "number"
             elif sub["type"] == "number":
-                widget = "number"
+                return "number"
+            else:
+                return None
         except KeyError:
-            widget = "object"
-        kwargs = {"label": sub.get("description", name)}
-        value = "" if use_default else getattr(ob, name)
-        yield name, value, widget, (name in required), (name in visible), kwargs
+            return "object"
+
+    def detect_subschema(self, sub, widget):
+        if widget == "object":
+            if "properties" in sub:
+                return sub["properties"]
+            else:
+                return sub
+        elif widget == "array":
+            return sub["items"]
+        else:
+            return None
+
+    def __call__(self, request, ob, schema, name=""):
+        schema = schema or get_schema(request, ob, name=name)
+        assert schema
+
+        required = schema["required"]
+        visible = schema.get("visible", required)
+
+        use_default = model_of(ob) == ob
+
+        for name, sub in schema["properties"].items():
+            # individual
+            widget = sub.get("widget")
+            if widget is None:
+                widget = self.detect_widget(sub) or "text"
+            subschema = self.detect_subschema(sub, widget)
+
+            kwargs = {"label": sub.get("description", name), "schema": subschema}
+            value = "" if use_default else getattr(ob, name)
+            yield self.field_factory(name, ob, value, widget, (name in required), (name in visible), **kwargs)
 
 
 def get_display(request, ob, name=""):
@@ -157,7 +177,6 @@ def get_display(request, ob, name=""):
     isrc = make_interface_from_class(model_of(ob))
     factory = adapters.lookup([isrc], IDisplayObject, name)
     return factory(request, ob)
-
 
 
 def add_display(
@@ -169,7 +188,7 @@ def add_display(
         excludes=None,
         overrides=None,
         depth=None,
-        schema_iterator=schema_iterator,
+        iterator_factory=SchemaIteratorFactory,
         walker=AlsoChildrenWalker):
     model = config.maybe_dotted(model)
     modifier = config.maybe_dotted(modifier)
@@ -209,12 +228,12 @@ def display_config(
         excludes=None,
         overrides=None,
         depth=None,
-        schema_iterator=schema_iterator,
+        iterator_factory=SchemaIteratorFactory,
         walker=AlsoChildrenWalker):
     def _display_config(modifier):
         def callback(context, funcname, ob):
             config = context.config.with_package(info.module)
-            config.add_display(model, modifier, name=name, includes=includes, excludes=excludes, overrides=overrides, depth=depth, schema_iterator=schema_iterator, walker=walker)
+            config.add_display(model, modifier, name=name, includes=includes, excludes=excludes, overrides=overrides, depth=depth, iterator_factory=iterator_factory, walker=walker)
         info = venusian.attach(modifier, callback, category='hidoi.displayobject')
         return modifier
     return _display_config
@@ -228,7 +247,7 @@ def set_display_object_factory(config, factory=None):
             widget_management = config.registry.queryUtility(IWidgetManagement)
             if widget_management is None:
                 return
-            default_factory = factory or DisplayObjectFactory(schema_iterator, FieldFactory(widget_management))
+            default_factory = factory or DisplayObjectFactory(SchemaIteratorFactory(FieldFactory(widget_management)))
         config.registry.registerUtility(default_factory, IDisplayObjectFactory)
 
     if factory is None:

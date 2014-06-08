@@ -2,7 +2,7 @@
 from pyramid.testing import testConfig as _testConfig
 import contextlib
 
-default_widgets = set(["text", "array", "object"])  # xxx
+default_widgets = set(["text", "array", "object", "number"])  # xxx
 
 
 @contextlib.contextmanager
