@@ -6,7 +6,10 @@ from zope.interface import (
     implementer,
     provider,
 )
-from collections import defaultdict
+from collections import (
+    defaultdict,
+    OrderedDict
+)
 
 import venusian
 from alchemyjsonschema.dictify import (
@@ -24,7 +27,8 @@ from .dynamicinterface import make_interface_from_class
 from .langhelpers import (
     model_of,
     funcname,
-    RepeatableSetQueue
+    RepeatableSetQueue,
+    nested_from_flatten
 )
 from .mapping import get_mapping
 from .displayobject import get_display
@@ -118,6 +122,7 @@ class FormWrapper(object):
         for k in dels:
             data.pop(k)
         if self.need_prepare:
+            data = nested_from_flatten(data)
             return self.mapping.jsondict_from_string_only_dict(data)
         return data
 
@@ -134,7 +139,7 @@ class FormWrapper(object):
     def validate(self, data, something=None):
         self.rawdata = data
 
-        self.schema_validation(data)
+        data = self.schema_validation(data)
         data = self.mapping.dict_from_jsondict(data)
         validation = self.get_validation(self.request, self.model, self.name)
         if validation is None:

@@ -2,6 +2,7 @@
 import logging
 logger = logging.getLogger(__name__)
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
+from collections import OrderedDict
 
 
 def model_of(object_or_class):
@@ -61,3 +62,52 @@ class RepeatableSetQueue(object):
     def __call__(self, *args, **kwargs):
         for fn in self:
             fn(*args, **kwargs)
+
+
+def get_pairs_iterator(xs):
+    if hasattr(xs, "items"):
+        for k, v in xs.items():
+            yield k, v
+    elif xs and hasattr(xs[0], "items") and len(xs[0]) == 1:
+        for x in xs:
+            for k, v in x.items():
+                yield k, v
+    else:
+        for k, v in xs:
+            yield k, v
+
+
+def insertion(ds, k, v):
+    for d in ds:
+        if k not in d:
+            d[k] = v
+            return
+    ds.append({k: v})
+
+
+def insertion_nested(r, xs, v, factory=OrderedDict):
+    target = r
+    prev = None
+    for x in xs[:-1]:
+        if x not in target:
+            target[x] = factory()
+        prev = target
+        target = target[x]
+    if isinstance(target, list):
+        insertion(target, xs[-1], v)
+    elif xs[-1] in target:
+        prev[xs[-2]] = [target, {xs[-1]: v}]
+    else:
+        target[xs[-1]] = v
+    return r
+
+
+def nested_from_flatten(D, splitter=".", factory=OrderedDict):
+    r = factory()
+    for k, v in get_pairs_iterator(D):
+        if splitter not in k:
+            r[k] = v
+        else:
+            xs = k.split(splitter)
+            insertion_nested(r, xs, v, factory)
+    return r

@@ -15,7 +15,7 @@ from .interfaces import (
     IWidgetManagement
 )
 from .dynamicinterface import make_interface_from_class
-from .langhelpers import model_of, funcname
+from .langhelpers import model_of, funcname, get_pairs_iterator
 
 
 class UnSuppport(Exception):
@@ -92,13 +92,6 @@ class DisplayObject(object):
         else:
             model_class = self._get_class_from_properties(field)
             return [get_display(self.request, model_class, name=self._usecase_name, min_of_items=0)]
-
-
-def get_pairs_iterator(xs):
-    if hasattr(xs, "items"):
-        return xs.items()
-    else:
-        return iter(xs)
 
 
 class FieldFactory(object):
