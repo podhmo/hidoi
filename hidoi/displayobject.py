@@ -16,7 +16,6 @@ from .interfaces import (
 )
 from .dynamicinterface import make_interface_from_class
 from .langhelpers import model_of, funcname
-from .widget import WidgetManagement
 
 
 class UnSuppport(Exception):
@@ -30,12 +29,14 @@ class DisplayObjectFactory(object):
 
     def __call__(self, request, ob, name="", schema=None):
         iterator = self.iterator_factory(request, ob, schema, name=name)
-        return DisplayObject(iterator, ob)
+        return DisplayObject(request, iterator, ob, name=name)
 
 
 @implementer(IDisplayObject)
 class DisplayObject(object):
-    def __init__(self, iterator, ob):
+    def __init__(self, request, iterator, ob, name=""):
+        self.request = request
+        self._usecase_name = name
         self.iterator = iterator
         self.ob = ob
         self._fieldnames = []
@@ -60,6 +61,30 @@ class DisplayObject(object):
     def __iter__(self):
         for name in self._fieldnames:
             yield getattr(self, name)
+
+    def _get_class_from_properties(self, field):
+        # xxx: this is trikky workaround.
+        from sqlalchemy.inspection import inspect
+        return inspect(model_of(self.ob)).get_property(field.name).mapper.class_
+
+    def child(self, field, min_of_items=1):
+        if field._value is None:
+            if min_of_items <= 0:
+                return None
+            else:
+                model_class = self._get_class_from_properties(field)
+                return get_display(self.request, model_class, name=self._usecase_name)
+        return get_display(self.request, field._value, name=self._usecase_name)
+
+    def children(self, field, min_of_items=1):
+        if len(field._value) > 0:
+            return [get_display(self.request, e, name=self._usecase_name)
+                    for e in field._value]
+        elif min_of_items <= 0:
+                return []
+        else:
+            model_class = self._get_class_from_properties(field)
+            return [get_display(self.request, model_class, name=self._usecase_name)]
 
 
 def get_pairs_iterator(xs):
@@ -154,7 +179,6 @@ class SchemaIteratorFactory(object):
     def __call__(self, request, ob, schema, name=""):
         schema = schema or get_schema(request, ob, name=name)
         assert schema
-
         required = schema["required"]
         visible = schema.get("visible", required)
 
