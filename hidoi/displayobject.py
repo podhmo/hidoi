@@ -27,14 +27,14 @@ class DisplayObjectFactory(object):
     def __init__(self, iterator_factory):
         self.iterator_factory = iterator_factory
 
-    def __call__(self, request, ob, name="", schema=None):
+    def __call__(self, request, ob, name="", schema=None, min_of_items=1):
         iterator = self.iterator_factory(request, ob, schema, name=name)
-        return DisplayObject(request, iterator, ob, name=name)
+        return DisplayObject(request, iterator, ob, name=name, min_of_items=min_of_items)
 
 
 @implementer(IDisplayObject)
 class DisplayObject(object):
-    def __init__(self, request, iterator, ob, name=""):
+    def __init__(self, request, iterator, ob, name="", min_of_items=1):
         self.request = request
         self._usecase_name = name
         self.iterator = iterator
@@ -44,6 +44,7 @@ class DisplayObject(object):
             self._fieldnames.append(field.name)
             setattr(self, field.name, field)
         self.unknown_errors = []
+        self.min_of_items = min_of_items
 
     def __repr__(self):
         return "<Disp:%s at 0x%x>" % (self.ob.__class__.__name__, id(self))
@@ -67,24 +68,30 @@ class DisplayObject(object):
         from sqlalchemy.inspection import inspect
         return inspect(model_of(self.ob)).get_property(field.name).mapper.class_
 
-    def child(self, field, min_of_items=1):
-        if field._value is None:
+    def child(self, field, min_of_items=None):
+        if min_of_items is None:
+            min_of_items = self.min_of_items
+
+        if not field._value:  # None or ""
             if min_of_items <= 0:
                 return None
             else:
                 model_class = self._get_class_from_properties(field)
-                return get_display(self.request, model_class, name=self._usecase_name)
-        return get_display(self.request, field._value, name=self._usecase_name)
+                return get_display(self.request, model_class, name=self._usecase_name, min_of_items=0)
+        return get_display(self.request, field._value, name=self._usecase_name, min_of_items=0)
 
-    def children(self, field, min_of_items=1):
+    def children(self, field, min_of_items=None):
+        if min_of_items is None:
+            min_of_items = self.min_of_items
+
         if len(field._value) > 0:
-            return [get_display(self.request, e, name=self._usecase_name)
+            return [get_display(self.request, e, name=self._usecase_name, min_of_items=0)
                     for e in field._value]
         elif min_of_items <= 0:
                 return []
         else:
             model_class = self._get_class_from_properties(field)
-            return [get_display(self.request, model_class, name=self._usecase_name)]
+            return [get_display(self.request, model_class, name=self._usecase_name, min_of_items=0)]
 
 
 def get_pairs_iterator(xs):
@@ -196,11 +203,13 @@ class SchemaIteratorFactory(object):
             yield self.field_factory(name, ob, value, widget, (name in required), (name in visible), **kwargs)
 
 
-def get_display(request, ob, name=""):
+def get_display(request, ob, name="", min_of_items=1):
     adapters = request.registry.adapters
     isrc = make_interface_from_class(model_of(ob))
     factory = adapters.lookup([isrc], IDisplayObject, name)
-    return factory(request, ob)
+    if factory is None:
+        raise Exception("Not found display object. isrc=%s, name=%s", isrc, name)
+    return factory(request, ob, name=name, min_of_items=min_of_items)
 
 
 def add_display(
@@ -219,13 +228,16 @@ def add_display(
     isrc = config.dynamic_interface(model)
 
     config.inspect_model_action(model, name, 0, ("modifier", funcname(modifier)))  # traceability
+    _name = name
     if modifier is None:
-        def get_display_object__no_modified(request, ob):
+        def get_display_object__no_modified(request, ob, name="", min_of_items=1):
             factory = request.registry.getUtility(IDisplayObjectFactory)
-            return factory(request, ob, name=name)
+            assert name == _name
+            return factory(request, ob, name=name, min_of_items=min_of_items)
         config.registry.adapters.register([isrc], IDisplayObject, name, get_display_object__no_modified)
     else:
-        def create_display_object(request, ob):
+        def create_display_object(request, ob, name="", min_of_items=1):
+            assert name == _name
             schema = get_schema(request, ob, name=name)
             template = schema.copy()
             template["visible"] = template["required"].copy()
@@ -235,7 +247,7 @@ def add_display(
                 modified = template
 
             factory = request.registry.getUtility(IDisplayObjectFactory)
-            return factory(request, ob, schema=modified, name=name)
+            return factory(request, ob, schema=modified, name=name, min_of_items=min_of_items)
         config.registry.adapters.register([isrc], IDisplayObject, name, create_display_object)
 
     def closure():
