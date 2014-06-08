@@ -141,6 +141,10 @@ def schema_iterator(request, ob, schema, name=""):
                 widget = "object"
             elif sub["type"] == "boolean":
                 widget = "boolean"
+            elif sub["type"] == "integer":
+                widget = "number"
+            elif sub["type"] == "number":
+                widget = "number"
         except KeyError:
             widget = "object"
         kwargs = {"label": sub.get("description", name)}

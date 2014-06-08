@@ -117,12 +117,13 @@ class FormWrapper(object):
                 dels.append(k)
         for k in dels:
             data.pop(k)
-        return self.mapping.jsondict_from_string_only_dict(data)
+        if self.need_prepare:
+            return self.mapping.jsondict_from_string_only_dict(data)
+        return data
 
     def schema_validation(self, data):
         try:
-            if self.need_prepare:
-                data = self.prepare_validation(data)
+            data = self.prepare_validation(data)
             self.mapping.validate_all_jsondict(data)
             return data
         except Exception as e:
@@ -185,7 +186,11 @@ def jsonschema_error_handler(state, exc):
             m = required_name_rx.search(e.message)
             state[m.group(1)].append(e.message)
         else:
-            state[e.path[0]].append(e.message)
+            try:
+                state[e.path[0]].append(e.message)
+            except IndexError as e:
+                logger.warn(e)
+                state["__all__"].append(e.message)
     return state
 
 
